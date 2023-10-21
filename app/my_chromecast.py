@@ -1,5 +1,5 @@
 
-
+import numpy as np
 import time
 import asyncio
 import colorsys
@@ -89,6 +89,36 @@ class ChromecastGroup:
     def refresh(self):
         for cast in self.chromecasts: 
             cast.media_controller.update_status()
+
+    def fade_to_stop(self, duration=5):
+        self.refresh()
+
+        max_vol = 0
+        for cast in self.chromecasts:  
+            if cast.status.volume_level > max_vol:
+                max_vol = np.round(cast.status.volume_level, 2)
+
+        fade_delay = duration/(max_vol*10) 
+        while max_vol > 0:
+            self.refresh()
+            max_vol = 0
+            for cast in self.chromecasts:
+                if cast.media_controller.status.player_state == 'PLAYING':
+                    if cast.status.volume_level > 0:
+                        current_vol = cast.status.volume_level-0.1
+                        cast.set_volume(current_vol)
+                    else:
+                        current_vol = 0
+                    if (current_vol > 0) & (current_vol > max_vol):
+                        max_vol = np.round(current_vol, 2)
+            time.sleep(fade_delay)
+
+        self.stop()
+        for cast in self.chromecasts:
+            print('Resetting chromecast to default volume: '+cast.cast_info.host)
+            cast.set_volume(CHROMECAST_VOLUME)
+
+
 
     def play_halloween2023(self, volume=39):
         url = 'http://10.67.1.254:8000/Halloween%20soundtrack2023.mp3'

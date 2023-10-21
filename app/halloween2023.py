@@ -207,7 +207,9 @@ def main(run_state=None):
                 print('Fading out music...')
                 # await heos.fade_to_stop(duration=3)
                 # await heos.play_laugh2022(volume=heos_volume)
-                cc_group.pause()
+                
+                #cc_group.paus()
+                cc_group.fade_to_stop()
 
                 # if use_tesla:
                 #     print('Closing trunk...')
@@ -332,8 +334,8 @@ if __name__ == "__main__":
         try:
             main(run_state)
         except Exception as e:
-           print('Caught an error in outer loop')
-           print(e)
+            print('Caught an error in outer loop')
+            print(e)
         
         if run_state.state != 'exit':
             print('Sleeping 5 sec')
