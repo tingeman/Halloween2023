@@ -14,8 +14,20 @@ import numpy as np
 
 import pychromecast
 
+from pychromecast.const import MESSAGE_TYPE
 
-KNOWN_HOSTS = ['10.67.1.250']
+def seek(castunit, position, resumeState="PLAYBACK_PAUSE"):
+    """Seek the media to a specific location."""
+    castunit.media_controller._send_command(
+        {
+            MESSAGE_TYPE: "SEEK",
+            "currentTime": position,
+            "resumeState": resumeState,
+        }
+    )
+
+
+KNOWN_HOSTS = ['10.67.1.250', '10.67.1.251', '10.67.1.252']
 
 # Change to the friendly name of your Chromecast
 CAST_NAME = "Udendørs"
@@ -54,18 +66,49 @@ if args.show_zeroconf_debug:
     print("Zeroconf version: " + zeroconf.__version__)
     logging.getLogger("zeroconf").setLevel(logging.DEBUG)
 
-chromecasts, browser = pychromecast.get_listed_chromecasts(
-    friendly_names=[args.cast], known_hosts=KNOWN_HOSTS
-)
+chromecasts, browser = pychromecast.get_chromecasts(known_hosts=KNOWN_HOSTS)
+
 if not chromecasts:
-    print(f'No chromecast with name "{args.cast}" discovered')
+    print(f'No chromecasts discovered')
     sys.exit(1)
 
-cast = chromecasts[0]
-# Start socket client's worker thread and wait for initial status update
-cast.wait()
-print(f'Found chromecast with name "{args.cast}", attempting to play "{args.url}"')
-cast.media_controller.play_media(args.url, "audio/mp3")
+# remove any chromecasts not in KNOWN_HOSTS
+chromecasts = list(filter(lambda item: item.cast_info.host in KNOWN_HOSTS, chromecasts))
+
+for id, cast in enumerate(chromecasts):
+    # Start socket client's worker thread and wait for initial status update
+    cast.wait()
+    cast.media_controller.stop()
+    cast.set_volume(0.3)
+    cast.wait()
+    print(f'Found chromecast with name "{cast.cast_info.friendly_name}", attempting to play "{args.url}"')
+
+for cast in chromecasts:
+    cast.media_controller.play_media(args.url, "audio/mp3", autoplay=False)
+
+for cast in chromecasts:
+    print("Waiting for paused status: "+cast.cast_info.host)
+    while cast.media_controller.status.player_state != "PAUSED":
+        cast.media_controller.update_status()
+        time.sleep(0.1)
+    print("Paused status reported: "+cast.cast_info.host)
+
+#time.sleep(1)
+#for cast in chromecasts:    
+#    seek(cast, 0)
+#    print('Pausing...')
+
+#time.sleep(1)
+#for cast in chromecasts:    
+#    cast.set_volume(0.4)
+
+time.sleep(1)
+
+for cast in chromecasts: 
+    print("start playing: "+cast.cast_info.host)
+    cast.media_controller.play()
+
+1/0
 
 # Wait for player_state PLAYING
 player_state = None

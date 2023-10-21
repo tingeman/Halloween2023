@@ -25,11 +25,11 @@ RUN --mount=type=cache,mode=0755,target=/root/.cache pip3 install -r requirement
 # If the repository is set up as a Python package with setup.py:
 RUN pip3 install .
 
-WORKDIR /app
-COPY ./app /app
+WORKDIR /Halloween2023
+RUN git clone https://github.com/tingeman/Halloween2023 .
 
 # Install pip requirements
-RUN --mount=type=cache,mode=0755,target=/root/.cache pip3 install -r requirements.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache pip3 install -r ./app/requirements.txt
 #RUN python3 -m pip install -r requirements.txt
 
 
