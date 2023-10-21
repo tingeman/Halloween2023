@@ -4,8 +4,10 @@ import colorsys
 from phue import Bridge
 from my_chromecast import *
 from my_hue import *
-#import getchlib
-import msvcrt
+try:
+    import getchlib
+except:
+    import msvcrt
 import threading
 import random
 
@@ -130,8 +132,12 @@ def main(run_state=None):
 
                 time.sleep(1)
                 print('waiting 1 sec')
-                #ch = getchlib.getkey(False, tout=1)
                 ch = ''
+                try:
+                    ch = getchlib.getkey(False, tout=1)
+                except:
+                    if msvcrt.kbhit():
+                        ch = msvcrt.getch().decode()
                 if ch != '':
                     print('you pressed: {0}'.format(ch))
                     
@@ -271,8 +277,12 @@ def main(run_state=None):
             # If no presence detected, wait one second...
             time.sleep(1)
             print('waiting 1 sec')
-            #ch = getchlib.getkey(False, tout=1)
             ch = ''
+            try:
+                ch = getchlib.getkey(False, tout=1)
+            except:
+                if msvcrt.kbhit():
+                    ch = msvcrt.getch().decode()
             if ch != '':
                 #ch = run_state.get_last_keypress()
                 print('you pressed: {0}'.format(ch))
