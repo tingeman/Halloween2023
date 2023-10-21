@@ -1,0 +1,10 @@
+version: '0.1'
+
+services:
+  halloween2023:
+    image: halloween2023
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 5002:5002
